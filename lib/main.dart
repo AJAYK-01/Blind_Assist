@@ -1,35 +1,87 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:maps_launcher/maps_launcher.dart';
+import 'package:object_detection/realtime/live_camera.dart';
+import 'package:object_detection/static%20image/static.dart';
 
-void main() {
-  runApp(MyApp());
+List<CameraDescription> cameras;
 
-  // MapsLauncher.launchCoordinates(37.4220041, -122.0862462);
+Future<void> main() async {
+  // initialize the cameras when the app starts
+  WidgetsFlutterBinding.ensureInitialized();
+  cameras = await availableCameras();
+  // running the app
+  runApp(
+    MaterialApp(
+      home: MyApp(),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark(),
+    )
+  );
+}
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
 }
 
-class MyApp extends StatelessWidget {
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Object Detector App"),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.info),
+            onPressed: aboutDialog,
+          ),
+        ],
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Blind Assist App'),
-        ),
-        body: Center(
-          child: TextButton(
-            child: Text('Google Maps'),
-            onPressed: () {
-              MapsLauncher.launchQuery(
-                  '1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA');
-              debugPrint('Button works');
-            },
+      body: Container(
+        child:Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              ButtonTheme(
+                minWidth: 170,
+                child: ElevatedButton(
+                  child: Text("Detect in Image"),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (context) => StaticImage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              ButtonTheme(
+                minWidth: 160,
+                child: ElevatedButton(
+                  child: Text("Real Time Detection"),
+                  onPressed:() {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (context) => LiveFeed(cameras),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+
+  aboutDialog(){
+     showAboutDialog(
+      context: context,
+      applicationName: "Object Detector App",
+      applicationLegalese: "By IEDC Cet",
+      applicationVersion: "1.0",
+      children: <Widget>[
+        Text("www.iedc.cet..ac.in"),
+      ],
+    );
+  }
+
 }

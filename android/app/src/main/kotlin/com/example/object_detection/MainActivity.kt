@@ -1,4 +1,4 @@
-package com.example.blind_assist
+package com.example.object_detection
 
 import io.flutter.embedding.android.FlutterActivity
 
