@@ -4,11 +4,13 @@ import 'package:object_detection/realtime/bounding_box.dart';
 import 'package:object_detection/realtime/camera.dart';
 import 'dart:math' as math;
 import 'package:tflite/tflite.dart';
-import 'package:object_detection/tts.dart';
+import 'package:object_detection/tts_function.dart';
 
 class LiveFeed extends StatefulWidget {
   final List<CameraDescription> cameras;
-  LiveFeed(this.cameras);
+  final String detectClass; // object to be detected
+  final bool detectAll; // detect all objects mode on/off
+  LiveFeed(this.cameras, this.detectClass, this.detectAll);
   @override
   _LiveFeedState createState() => _LiveFeedState();
 }
@@ -17,6 +19,8 @@ class _LiveFeedState extends State<LiveFeed> {
   List<dynamic> _recognitions;
   int _imageHeight = 0;
   int _imageWidth = 0;
+  final tts = TextToSpeechFunction();
+  
   initCameras() async {
 
   }
@@ -43,9 +47,25 @@ class _LiveFeedState extends State<LiveFeed> {
     loadTfModel();
   }
 
+  void voiceOutput() {
+    List<dynamic> objects = _recognitions == null ? [] : _recognitions;
+    if(widget.detectAll){
+      objects.forEach((r) {
+        tts.speak(r["detectedClass"]);
+      });
+    } else {
+      for(var i=0;i<objects.length;i++){
+        if(objects[i]["detectedClass"] == widget.detectClass){
+          tts.speak("right there");
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Size screen = MediaQuery.of(context).size;
+    voiceOutput();
     return Scaffold(
       appBar: AppBar(
         title: Text("Real Time Object Detection"),
@@ -60,7 +80,6 @@ class _LiveFeedState extends State<LiveFeed> {
             screen.height,
             screen.width,
           ),
-          TextToSpeech(_recognitions == null ? [] : _recognitions),
         ],
       ),
     );

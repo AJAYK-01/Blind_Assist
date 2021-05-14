@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:object_detection/realtime/live_camera.dart';
-import 'package:object_detection/static%20image/static.dart';
+import 'dart:async' show Future;
+import 'package:object_detection/stt.dart';
 
 List<CameraDescription> cameras;
 
@@ -24,6 +24,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,39 +37,27 @@ class _MyAppState extends State<MyApp> {
           ),
         ],
       ),
-      body: Container(
-        child:Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ButtonTheme(
-                minWidth: 170,
-                child: ElevatedButton(
-                  child: Text("Detect in Image"),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => StaticImage(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              ButtonTheme(
-                minWidth: 160,
-                child: ElevatedButton(
-                  child: Text("Real Time Detection"),
-                  onPressed:() {
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => LiveFeed(cameras),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+      body: Stack(
+        children: [
+          Container(
+            alignment: Alignment.center,
+            child: Column(
+              children: [
+                Text("Commands", style: TextStyle(
+                  color: Colors.red[800],
+                  height: 5,
+                  fontSize: 25,
+                  //decoration: TextDecoration.underline,
+                  //decorationColor: Colors.black,
+                ),),
+                Text("Find me a/an/my x", style: TextStyle(fontSize: 16,),),
+                Text("Start object detection", style: TextStyle(fontSize: 16,),),
+              ],
+            ),
           ),
-        ),
-      ),
+          SpeechScreen(cameras),
+        ],
+      )
     );
   }
 
