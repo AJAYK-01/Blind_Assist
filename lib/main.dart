@@ -10,59 +10,69 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   cameras = await availableCameras();
   // running the app
-  runApp(
-    MaterialApp(
-      home: MyApp(),
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
-    )
-  );
+  runApp(MaterialApp(
+    home: MyApp(),
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData.dark(),
+  ));
 }
+
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Object Detector App"),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.info),
-            onPressed: aboutDialog,
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Container(
-            alignment: Alignment.center,
-            child: Column(
-              children: [
-                Text("Commands", style: TextStyle(
-                  color: Colors.red[800],
-                  height: 5,
-                  fontSize: 25,
-                  //decoration: TextDecoration.underline,
-                  //decorationColor: Colors.black,
-                ),),
-                Text("Find me a/an/my x", style: TextStyle(fontSize: 16,),),
-                Text("Start object detection", style: TextStyle(fontSize: 16,),),
-              ],
+        appBar: AppBar(
+          title: Text("Object Detector App"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.info),
+              onPressed: aboutDialog,
             ),
-          ),
-          SpeechScreen(cameras),
-        ],
-      )
-    );
+          ],
+        ),
+        body: Stack(
+          children: [
+            Container(
+              alignment: Alignment.center,
+              child: Column(
+                children: [
+                  Text(
+                    "Commands",
+                    style: TextStyle(
+                      color: Colors.red[800],
+                      height: 5,
+                      fontSize: 25,
+                      //decoration: TextDecoration.underline,
+                      //decorationColor: Colors.black,
+                    ),
+                  ),
+                  Text(
+                    "Find me a/an/my x",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    "Start object detection",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SpeechScreen(cameras),
+          ],
+        ));
   }
 
-  aboutDialog(){
-     showAboutDialog(
+  aboutDialog() {
+    showAboutDialog(
       context: context,
       applicationName: "Object Detector App",
       applicationLegalese: "By IEDC Cet",
@@ -72,5 +82,4 @@ class _MyAppState extends State<MyApp> {
       ],
     );
   }
-
 }

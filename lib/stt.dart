@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:object_detection/tts_function.dart';
 import 'package:object_detection/realtime/live_camera.dart';
 import 'package:camera/camera.dart';
+
+import 'services/gmap.dart';
+import 'services/osm.dart';
 
 /* 
  * Imporvements Needed
@@ -30,7 +35,13 @@ class _SpeechScreenState extends State<SpeechScreen> {
   String _text = 'Press the Screen and start speaking';
   double _confidence = 1.0;
   String _labels = "";
-  List<String> commands = ["find me a ", "find me an ", "find me my ", "start object detection", "what is my location"];
+  List<String> commands = [
+    "find me a ",
+    "find me an ",
+    "find me my ",
+    "start object detection",
+    "what is my location"
+  ];
   bool appStarted = false;
 
   @override
@@ -52,8 +63,8 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
   // check whether object is in the tflite model
   findLabel(String object) {
-    if (_labels != ""){
-      if(_labels.indexOf(object) != -1){
+    if (_labels != "") {
+      if (_labels.indexOf(object) != -1) {
         return true;
       } else {
         return false;
@@ -64,88 +75,131 @@ class _SpeechScreenState extends State<SpeechScreen> {
     }
   }
 
-  dynamic cmdAnalyzer(String text) {
+  dynamic cmdAnalyzer(String text) async {
     print("Text Came for analyze: $text");
-    String parameter="";
+    String parameter = "";
     int cmdIndex;
 
+    if (_text.contains("navigate to")) {
+      var destination =
+          _text.split(" ").getRange(2, _text.split(" ").length).join(' ');
+      if (destination != null) {
+        try {
+          var result = await searchOsm(destination);
+          print(result);
+          MapUtils.openMap(result[0], result[1]);
+        } catch (e) {
+          print(e);
+        }
+      }
+    }
+
+    if (_text.contains("navigate me to")) {
+      var destination =
+          _text.split(" ").getRange(3, _text.split(" ").length).join(' ');
+      if (destination != null) {
+        try {
+          var result = await searchOsm(destination);
+          print(result);
+          MapUtils.openMap(result[0], result[1]);
+        } catch (e) {
+          print(e);
+        }
+      }
+    }
 
     // if speech valid, check for a voice command, if found finds (command,parameter)
-    for(var i=0;i<commands.length;i++){
-      if (text.indexOf(commands[i]) != -1){ 
-
+    for (var i = 0; i < commands.length; i++) {
+      if (text.indexOf(commands[i]) != -1) {
         cmdIndex = i;
-        parameter = text.substring(text.indexOf(commands[i])+commands[i].length, text.length);
+        parameter = text.substring(
+            text.indexOf(commands[i]) + commands[i].length, text.length);
 
-        if(i<3 && parameter.length < 2){ 
+        if (i < 3 && parameter.length < 2) {
           print("COMMAND INCOMPLETE (NOT ENOUGH PARAMETERS)");
           return null;
         }
-        
-        print("Command: "+commands[i]+", Parameter: $parameter");
+
+        print("Command: " + commands[i] + ", Parameter: $parameter");
       }
     }
 
     // if voice command valid executes the function
-    if(cmdIndex == null){
+    if (cmdIndex == null) {
       print("WRONG COMMAND !!!");
       setState(() {
         _text = "WRONG COMMAND !!!";
       });
       return null; // no command found
     } else {
-
       setState(() {
         _text = "";
       });
 
-      if(cmdIndex < 3){ // object detection commands
-        if(findLabel(parameter)){
+      if (cmdIndex < 3) {
+        // object detection commands
+        if (findLabel(parameter)) {
           tts.speak("Starting object detection for $parameter");
-          Future.delayed(const Duration(seconds: 3), ()=> {
-            Navigator.push(context, MaterialPageRoute(
-            builder: (context) => LiveFeed(widget.cameras, parameter, false),),
-          )
-          });
+          Future.delayed(
+              const Duration(seconds: 3),
+              () => {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            LiveFeed(widget.cameras, parameter, false),
+                      ),
+                    )
+                  });
         } else {
           tts.speak("$parameter is not identifieble");
         }
-      } else if(cmdIndex == 3){ // start raltime dtetction 
+      } else if (cmdIndex == 3) {
+        // start raltime dtetction
         tts.speak("starting realtime detection for all");
-        Future.delayed(const Duration(seconds: 3), ()=> {
-          Navigator.push(context, MaterialPageRoute(
-              builder: (context) => LiveFeed(widget.cameras, "", true),),
-          )
-        });
-      } else if(cmdIndex == 4){
+        Future.delayed(
+            const Duration(seconds: 3),
+            () => {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LiveFeed(widget.cameras, "", true),
+                    ),
+                  )
+                });
+      } else if (cmdIndex == 4) {
         tts.speak("checking for your geo location");
       }
-
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if(!_isListening){
-      if (appStarted){ // preventing unwanted running
+    if (!_isListening) {
+      if (appStarted) {
+        // preventing unwanted running
         cmdAnalyzer(_text);
       }
     }
     return InkWell(
       child: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        color: Colors.transparent,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children:[
-            Icon((_isListening) ? Icons.mic:Icons.mic_none_outlined, size: 70,color: (_isListening) ? Colors.red[400]:Colors.grey,),
-            Text("Confidence: ${(_confidence * 100.0).toStringAsFixed(1)}%"),
-            // ElevatedButton(onPressed: (){print(_text);}, child: Text("Click Me")),
-            Text(_text),
-          ])
-      ),
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          color: Colors.transparent,
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(
+                  (_isListening) ? Icons.mic : Icons.mic_none_outlined,
+                  size: 70,
+                  color: (_isListening) ? Colors.red[400] : Colors.grey,
+                ),
+                Text(
+                    "Confidence: ${(_confidence * 100.0).toStringAsFixed(1)}%"),
+                // ElevatedButton(onPressed: (){print(_text);}, child: Text("Click Me")),
+                Text(_text),
+              ])),
       onTap: () {
         print("inkwell pressed!");
         _listen();
@@ -154,7 +208,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   }
 
   void _listen() async {
-    if(appStarted == false){
+    if (appStarted == false) {
       setState(() {
         appStarted = true;
       });
@@ -162,14 +216,15 @@ class _SpeechScreenState extends State<SpeechScreen> {
     if (!_isListening) {
       bool available = await _speech.initialize(
         onStatus: (val) => {
-          if (val == "notListening"){
-            setState((){
-              _isListening = false;
-            });
-            print("Mic OFF");
-          } else {
-            print("Mic ON")
-          }
+          if (val == "notListening")
+            {
+              setState(() {
+                _isListening = false;
+              })
+              // print("Mic OFF");
+            }
+          else
+            {print("Mic ON")}
         },
         onError: (val) => print('onError: $val'),
       );
