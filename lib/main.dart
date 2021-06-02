@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Object Detector App"),
+          title: Text("Blind Assistant"),
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.info),
@@ -63,6 +63,12 @@ class _MyAppState extends State<MyApp> {
                       fontSize: 16,
                     ),
                   ),
+                  Text(
+                    "Navigate to/me to",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -74,7 +80,7 @@ class _MyAppState extends State<MyApp> {
   aboutDialog() {
     showAboutDialog(
       context: context,
-      applicationName: "Object Detector App",
+      applicationName: "Blind Assistant App",
       applicationLegalese: "By IEDC Cet",
       applicationVersion: "1.0",
       children: <Widget>[
